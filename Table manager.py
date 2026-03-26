@@ -32,3 +32,18 @@ def validate_date(value):
         return False
     y, m, d = parts
     return len(y) == 4 and len(m) == 2 and len(d) == 2 and all(p.isdigit() for p in parts)
+
+def prompt_value(col_name, col_type, nullable=True):
+    hint = {
+        "TEXT":     "text",
+        "INTEGER":  "whole number",
+        "REAL":     "decimal number",
+        "DATE":     "YYYY-MM-DD",
+    }.get(col_type, "value")
+
+    label = f" {col_name} ({hint})"
+    if nullable:
+        label += " [Enter to leave empty] "
+    label += ": "
+
+    
