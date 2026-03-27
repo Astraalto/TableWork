@@ -46,4 +46,32 @@ def prompt_value(col_name, col_type, nullable=True):
         label += " [Enter to leave empty] "
     label += ": "
 
-    
+    while True:
+        raw = input(label).strip()
+
+        if raw == "":
+            if nullable:
+                return None
+            else:
+                print(f" '{col_name}' cannot be empty")
+                continue
+        
+        if col_type == "INTEGER":
+            try:
+                return int(raw)
+            except ValueError:
+                print("Please eneter whole number")
+
+        if col_type == "REAL":
+            try:
+                return float(raw)
+            except ValueError:
+                print("Please enter decimal number")
+
+        elif col_type == "DATE":
+            if validate_date(raw):
+                return raw
+            print("Please use YYYY-MM-DD format (e.g. 2024-06-27)")
+
+        else:
+            return raw
