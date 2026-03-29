@@ -75,3 +75,18 @@ def prompt_value(col_name, col_type, nullable=True):
 
         else:
             return raw
+        
+def create_table():
+    conn = get_conn()
+    cursor = conn.cursor()
+
+    print("\n -- Create new table --\n")
+    name = input(" Table name (letters and underscores only): ").strip()
+    if not name.replace("_", "").isalpha():
+        print("Invalid name")
+        conn.close()
+        pause()
+        return
+    
+    print(f"\n Define columns for '{name}'.")
+    print(" (And 'id' will be added automatically.)\n")
