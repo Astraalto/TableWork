@@ -90,3 +90,18 @@ def create_table():
     
     print(f"\n Define columns for '{name}'.")
     print(" (And 'id' will be added automatically.)\n")
+
+    columns = []
+    while True:
+        col_name = input (" Column name (or Enter to finish): ").strip()
+        if not col_name:
+            if not columns:
+                print(" Add at least one column")
+                continue
+            break
+        if not col_name.replace("-", "").isalpha():
+            print(" Column name: letters and underscores only. ")
+            continue
+        if col_name.lower() == "id":
+            print(" 'id' is reserved for the automatic primary key. ")
+            continue
