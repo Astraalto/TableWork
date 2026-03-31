@@ -105,3 +105,19 @@ def create_table():
         if col_name.lower() == "id":
             print(" 'id' is reserved for the automatic primary key. ")
             continue
+
+        print(f" Column type for '{col_name}':")
+        for i, t in enumerate(COLUMN_TYPES, 1):
+            print(f"   {i},  {t}")
+            while True:
+                t_choice = input(" Pick type: ").strip()
+                if t_choice.isdigit() and 1 <= int(t_choice) <= len(COLUMN_TYPES):
+                    col_type = COLUMN_TYPES[int(t_choice) -1]
+                    break
+                print(" Invalid choice.")
+
+            nullable = input(f" Is '{col_name}' required ? (Y/N): ").strip().lower() == "y"
+            not_null = "NOT NULL" if nullable else ""
+
+            columns.append((col_name, col_type, not_null))
+            print(f"  Column added: {col_name}  ({col_type}{ 'NOT NULL' if not_null else ''})\n")
