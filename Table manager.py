@@ -121,3 +121,24 @@ def create_table():
 
             columns.append((col_name, col_type, not_null))
             print(f"  Column added: {col_name}  ({col_type}{ 'NOT NULL' if not_null else ''})\n")
+
+
+        col_defs = ",\n           ".join(
+            f"{col_name} {col_type} {not_null}".strip()
+            for col_name, col_type, not_null in columns
+        )
+        sql = f"""CREATE TABLE {name} (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,  
+                {col_defs}
+        )"""
+        print(f"\n  SQL preview:\n{sql}")
+        confirm = input("  Create this table (Y/N): ").strip().lower()
+        if confirm == "y":
+            cursor.execute(sql)
+            conn.commit()
+            print(f"\n Table '{name}' created.")
+        else:
+            print("  Concelled.")
+
+        conn.close()
+        pause()
