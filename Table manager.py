@@ -123,22 +123,43 @@ def create_table():
             print(f"  Column added: {col_name}  ({col_type}{ 'NOT NULL' if not_null else ''})\n")
 
 
-        col_defs = ",\n           ".join(
-            f"{col_name} {col_type} {not_null}".strip()
-            for col_name, col_type, not_null in columns
+    col_defs = ",\n           ".join(
+        f"{col_name} {col_type} {not_null}".strip()
+        for col_name, col_type, not_null in columns
         )
-        sql = f"""CREATE TABLE {name} (
+    sql = f"""CREATE TABLE {name} (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,  
                 {col_defs}
         )"""
-        print(f"\n  SQL preview:\n{sql}")
-        confirm = input("  Create this table (Y/N): ").strip().lower()
-        if confirm == "y":
+    print(f"\n  SQL preview:\n{sql}")
+    confirm = input("  Create this table (Y/N): ").strip().lower()
+    if confirm == "y":
             cursor.execute(sql)
             conn.commit()
             print(f"\n Table '{name}' created.")
-        else:
+    else:
             print("  Concelled.")
 
+    conn.close()
+    pause()
+
+
+def edit_row():
+    conn = get_conn()
+    cursor = conn.cursor()
+    table = pick_table(cursor)
+    if not table:
+        conn.close()
+        return
+    
+    cols = get_columns(cursor, table)
+    col_names = [c[1] for c in cols]
+
+    cursor.execute(f"SELECT * FROM '{table}'")
+    rows = cursor.fetchall()
+
+    if not rows:
+        print(f"\n  '{table}' is empty.")
         conn.close()
         pause()
+        return
