@@ -163,3 +163,25 @@ def edit_row():
         conn.close()
         pause()
         return
+    
+    print(f"\n Rows in '{table}' :\n")
+    for row in rows:
+        summary = "  |  ".join(f"{col_names[i]}: {v}" for i, v in enumerate(row))
+        print(f"   {summary}")
+
+    row_id = input("\n Enter the ID of the row to edit (or 0 to cancel): ").strip()
+    if row_id == "0" or not row_id.isdigit():
+        conn.close()
+        return
+    
+    cursor.execute(f"SELECT * FROM '{table}' WHERE id = ?")
+    row = cursor.fetchone()
+    if not row:
+        print(f"   No row with ID {row_id}.")
+        conn.close()
+        pause()
+        return
+    
+    print(f"\n Editing row ID {row_id}. Press Enter to keep current value.\n")
+
+        
