@@ -184,4 +184,15 @@ def edit_row():
     
     print(f"\n Editing row ID {row_id}. Press Enter to keep current value.\n")
 
+    data_cols = [c for c in cols if c[1] != "id"]
+    current = {c[1]: row[i + 1] for i, c in enumerate(data_cols)}
+    updates = {}
+
+    for col in data_cols:
+        col_name = col[1]
+        col_type = col[2]
+        current_val = current[col_name]
+        print(f" Current{col_name}: {current_val}")
+        new_val = prompt_value(col_name, col_type, nullable=True)
+        updates[col_name] = new_val if new_val is not None else current_val
         
