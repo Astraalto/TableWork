@@ -195,4 +195,14 @@ def edit_row():
         print(f" Current{col_name}: {current_val}")
         new_val = prompt_value(col_name, col_type, nullable=True)
         updates[col_name] = new_val if new_val is not None else current_val
+
+    set_clause = ", ".join(f"{k} = ?" for k in updates)
+    cursor.execute(
+        f"UPDATE  '{table}' SET {set_clause} WHERE id = ?",
+        list(updates.values()) + [int(row_id)]
+    )
+    conn.commit()
+    print(f"\n  Row ID  {row_id} updated.")
+    conn.close()
+    pause()
         
