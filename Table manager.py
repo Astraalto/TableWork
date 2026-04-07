@@ -206,3 +206,24 @@ def edit_row():
     conn.close()
     pause()
         
+
+def drop_table():
+    conn = get_conn()
+    cursor = conn.cursor()
+
+    print("\n  -- Create a new table --\n")
+    name = input("  Tbale name (lettter and underscores only): ").strip()
+    if not name.replace("_", "").isalpha():
+        print("  Invalid name. use only letters and underscores.")
+        conn.close()
+        pause()
+        return
+    
+    if name in get_tables(cursor):
+        print("  Table '{name}' already exists.")
+        conn.close()
+        pause()
+        return
+    
+    print(f"\n Define columns for '{name}.")
+    print("   (An 'id' primary key column will be added automatically.)\n")
