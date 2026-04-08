@@ -210,20 +210,24 @@ def edit_row():
 def drop_table():
     conn = get_conn()
     cursor = conn.cursor()
+    tables = get_tables(cursor)
 
-    print("\n  -- Create a new table --\n")
-    name = input("  Tbale name (lettter and underscores only): ").strip()
-    if not name.replace("_", "").isalpha():
-        print("  Invalid name. use only letters and underscores.")
+    if not tables:
+        print("\n No tables found.")
         conn.close()
         pause()
         return
-    
-    if name in get_tables(cursor):
-        print("  Table '{name}' already exists.")
+
+    print("\n  ── Delete table ──\n")
+    print("  Tables:")
+    for i, t in enumerate(tables, 1):
+        print(f"   {i}.  {t}")
+
+    choice = input("\n Pick table number to delete (or 0 to cancel):  ").strip()
+    if choice == "0" or not choice.isdigit() or not (1 <= int(choice) <= len(tables)):
         conn.close()
-        pause()
         return
     
-    print(f"\n Define columns for '{name}.")
-    print("   (An 'id' primary key column will be added automatically.)\n")
+    table = tables[int(choice) - 1]
+    cursor.execute(f"SELECT COUNT(*) FROM '{table}'")
+    count = cursor.fetchone()[0]
