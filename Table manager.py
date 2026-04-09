@@ -223,7 +223,7 @@ def drop_table():
     for i, t in enumerate(tables, 1):
         print(f"   {i}.  {t}")
 
-    choice = input("\n Pick table number to delete (or 0 to cancel):  ").strip()
+    choice = input("\n Pick table number to delete or 0 to cancel:  ").strip()
     if choice == "0" or not choice.isdigit() or not (1 <= int(choice) <= len(tables)):
         conn.close()
         return
@@ -231,3 +231,19 @@ def drop_table():
     table = tables[int(choice) - 1]
     cursor.execute(f"SELECT COUNT(*) FROM '{table}'")
     count = cursor.fetchone()[0]
+
+    confirm = input(
+        f"  Delete '{table}' and all its {count} row(s) ? This cannot be undone. (Y/N): "
+    ).strip().lower()
+
+    if confirm == "Y":
+        cursor.execute(f"DROP TABLE  '{table}'")
+        conn.commit()
+        print(f"\n  Table '{table}'  deleted. ")
+    else:
+        print("  Cancelled.")
+
+    conn.close()
+    pause()
+
+    
