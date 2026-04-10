@@ -246,4 +246,17 @@ def drop_table():
     conn.close()
     pause()
 
+    def pick_table(cursor):
+        tables = get_tables(cursor)
+        if not tables:
+            print("\n  No tables found. Create first. ")
+            return None
+        print("\n  Tables:")
+        for i, t in enumerate(tables, 1):
+            print(f"   {i}.  {t}")
+        choice = input("  Pick table number (or 0 to cancel): ").strip()
+        if choice == "0" or not choice.isdigit() or not (1 <= int(choice)  <= len(tables)):
+            return None
+        return tables[int(choice)  -1]
+
     
