@@ -258,5 +258,21 @@ def drop_table():
         if choice == "0" or not choice.isdigit() or not (1 <= int(choice)  <= len(tables)):
             return None
         return tables[int(choice)  -1]
+    
+    def view_table():
+        conn = get_conn()
+        cursor = conn.cursor()
+        table = pick_table(cursor)
+        if not table:
+            conn.close()
+            return
+        
+        cols = get_columns(cursor, table)
+        col_names = [c[1] for c in cols]
+
+        cursor.execute(f"SELECT * FROM '{table}'")
+        rows = cursor.fetchall()
+
+        print(f"\n Table: {table} ({len(rows)} row(s))\n")
 
     
