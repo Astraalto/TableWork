@@ -275,4 +275,25 @@ def drop_table():
 
         print(f"\n Table: {table} ({len(rows)} row(s))\n")
 
+        if not rows:
+            print("  (Empty table)")
+        else:
+            widths = [max(len(str(c)), 6) for c in col_names]
+            for row in rows:
+                for i, val in enumerate(row):
+                    widths[i] = max(widths[i], len(str(val) if val is not None else ""))
+
+            header = "  " + "  ".join(str(col_names[i]).ljust(widths[i]) for i in range(len(col_names)))
+            print(header)
+            print("  " + "  " * (sum(widths)  + 2 * len(widths)))
+            for row in rows:
+                line = "  " + "  ".join(
+                    (str(v) if v is not None else "").ljust(widths[i])
+                    for i, v in enumerate(row)
+                )
+                print(line)
+
+        conn.close()
+        pause()
+
     
