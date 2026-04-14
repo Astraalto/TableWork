@@ -296,4 +296,20 @@ def drop_table():
         conn.close()
         pause()
 
+    def search_table():
+        conn = get_conn()
+        cursor = conn.cursor()
+        table = pick_table(cursor)
+        if not table:
+            conn.close()
+            return
+        
+        cols = get_columns(cursor, table)
+        searchable = [c for c in cols if c[2] in ("TEXT", "DATE") and c[1] != "id"]
+
+        if not searchable:
+            print("\n  No searchable TEXT or DATE columns in this table.")
+            conn.close()
+            pause()
+            return
     
