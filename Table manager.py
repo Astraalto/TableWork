@@ -312,4 +312,15 @@ def drop_table():
             conn.close()
             pause()
             return
+        
+        print("\n Search in columns:")
+        for i, c in enumerate(searchable, 1):
+            print(f"   {i}. {c[1]}")
+        choice = input("  Pick column(or 0 to cancel):  ").strip()
+        if choice == "0" or not choice.isdigit() or not (1 <= int(choice)  <= len(searchable)):
+            conn.close()
+            return
+        
+        col = searchable[int(choice)  -1][1]
+        term = input(f"  Search '{col}'  for:  ").strip()
     
