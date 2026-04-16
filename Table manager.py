@@ -324,3 +324,15 @@ def drop_table():
         col = searchable[int(choice)  -1][1]
         term = input(f"  Search '{col}'  for:  ").strip()
     
+        cursor.execute(f"SELECT * FROM '{table}' WHERE {col} LIKE ?", (f"%{term}%",))
+        rows = cursor.fetchall()
+        col_names = [c[1] for c in cols]
+
+        print(f"\n {len(rows)} result(s) for '{term}' in '{col}':\n")
+        for row in rows:
+            for name, val in zip(col_names, row):
+                print(f"   {name}: {val}")
+            print()
+
+        conn.close()
+        pause()
