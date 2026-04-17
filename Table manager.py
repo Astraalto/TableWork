@@ -336,3 +336,33 @@ def drop_table():
 
         conn.close()
         pause()
+
+    def add_row():
+        conn = get_conn()
+        cursor = conn.cursor()
+        table = pick_table(cursor)
+        if not table:
+            conn.close()
+            return
+        
+        cols = get_columns(cursor, table)
+        data_cols = [c for c in cols if c[1] != "id"]
+
+        print(f"\n --Add row to '{table}' --\n")
+        values = {}
+        for col in data:
+            col_name = col[1]
+            col_type = col[2]
+            required = bool(col[3])
+            values[col_name] = prompt_value(col_name, col_type, nullable=not required)
+
+        col_list = ", ".join(values.keys())
+        placeholders = ", ".join(["?"] * len(values))
+        cursor.execute(
+            f"INSERT INTO '{table}' ({col_list}) VALUES ({placeholders})",
+            list(values.values())
+        )
+        conn.commit()
+        print(f"\n Row added with ID {cursor.lastrowid}.")
+        conn.close()
+        pause()
