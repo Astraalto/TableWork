@@ -366,3 +366,33 @@ def drop_table():
         print(f"\n Row added with ID {cursor.lastrowid}.")
         conn.close()
         pause()
+
+    def edit_row():
+        conn = get_conn()
+        cursor = conn.cursor()
+        table = pick_table(cursor)
+        if not table:
+            conn.close()
+            return
+        
+        cols = get_columns(cursor, table)
+        col_names = [c[1] for c in cols]
+
+        cursor.execute(f"SELECT * FROM '{table}'")
+        rows = cursor.fetchall()
+
+        if not rows:
+            print(f"\n '{table} is empty")
+            conn.close()
+            pause()
+            return
+        
+        print(f"\n Rows in '{table}':\n")
+        for row in rows:
+            summary = "   |   ".join(f"{col_names[1]}:  {v}" for i, v in enumerate(row))
+            print(f"  {summary}")
+
+        row_id = input("\n Enter ID of the row to edit (or 0 to cancel): ").strip()
+        if row_id == "0" or not row_id.isdigit():
+            conn.close()
+            return    
