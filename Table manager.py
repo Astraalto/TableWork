@@ -396,3 +396,34 @@ def drop_table():
         if row_id == "0" or not row_id.isdigit():
             conn.close()
             return    
+        
+        cursor.execute(f"SELECT * FROM '{table}' WHERE id =?", (int(row_id),))
+        row = cursor.execute.fetchone()
+        if not row:
+            print(f"  No row with ID {row_id}.")
+            conn.close()
+            pause()
+            return
+        
+        print(f"\n Editing row ID {row_id}. Press Enter to keep current value. \n")
+
+        data_cols = [c for c in cols if c[1] != "id"]
+        current = {c[1]: row[i + 1] for i, c in enumerate(data_cols)}
+        updates = {}
+
+        for col in data_cols:
+            col_name = col[1]
+            col_type = col[2]
+            current_val = current[col_name]
+            print(f" Current {col_name}: {current_val}")
+            new_val = prompt_value(col_name, col_type, nullable=True)
+
+        set_clause = ", ".join(f"{k} = ?" for k in updates)
+        cursor.execute(
+            f"UPDATE '{table}' SET {set_clause} WHERE id = ?",
+            list(updates.values()) + [int(row_id)]
+        )
+        conn.commit()
+        print(f"\n Row ID {row_id} updated.")
+        conn.close()
+        pause()
