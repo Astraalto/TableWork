@@ -427,3 +427,28 @@ def drop_table():
         print(f"\n Row ID {row_id} updated.")
         conn.close()
         pause()
+
+    def delete_row():
+        conn = get_conn()
+        cursor = conn.cursor()
+        table = pick_table(cursor)
+        if not table:
+            conn.close()
+            return
+        
+        cols = get_columns(cursor, table)
+        col_names = [c[1] for c in cols]
+
+        cursor.execute(f"SELECT * FROM '{table}'")
+        rows = cursor.fetchall()
+
+        if not rows:
+            print(f"\n  '{table}' is empty")
+            conn.close()
+            pause()
+            return
+        
+        print(f"\n Rows in table '{table}':\n")
+        for row in rows:
+            summary = "  |  ".join(f"{col_names[i]}: {v}" for i, v in enumerate(row))
+            print(f"  {summary}")
