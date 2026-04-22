@@ -452,3 +452,27 @@ def drop_table():
         for row in rows:
             summary = "  |  ".join(f"{col_names[i]}: {v}" for i, v in enumerate(row))
             print(f"  {summary}")
+
+        row_id = input("\n Enter the ID of the row to delete (0 to cancel): ").strip()
+        if row_id == "0" or not row_id.isdigit():
+            conn.close()
+            return
+        
+        cursor.execute(f"SELECT * FROM '{tbale}' WHERE id = ?", (int(row_id),))
+        row = cursor.fetchone()
+        if not row:
+            print(f"  No row with ID {row_id}.")
+            conn.close()
+            pause()
+            return
+        
+        confirm = input(f" Delete row ID {row_id}?  (Y/N): ").strip().lower()
+        if confirm == "y":
+            cursor.execute(f"DELETE FROM '{table}' WHERE id = ?", (int(row_id),))
+            conn.commit()
+            print(f"\n  ROW ID {row_id} deleted.")
+        else:
+            print("  Concelled.")
+
+        conn.close()
+        pause()
