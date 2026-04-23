@@ -476,3 +476,28 @@ def drop_table():
 
         conn.close()
         pause()
+
+    def tables_menu():
+        while True:
+            clear()
+            print("╔══════════════════════════════╗")
+            print("║      MANAGE TABLES           ║")
+            print("╠══════════════════════════════╣")
+            print("║  1. List all tables          ║")
+            print("║  2. Create new table         ║")
+            print("║  3. Delete a table           ║")
+            print("║  0. Back                     ║")
+            print("╚══════════════════════════════╝")
+            choice = input("  Choose:  ").strip()
+
+            if choice == "1":
+                conn = get_conn()
+                cursor = conn.cursor()
+                tables = get_tables(cursor)
+                print(f"\n  Tables in {DB_FILE}:")
+                if tables:
+                    for t in tables:
+                        cursor.execute(f"SELECT COUNT(*) FROM '{t}'")
+                        count = cursor.fetchone()[0]
+                        cols = get_columns(columns, t)
+                        print(f"   {t}  ({count} rows, {len(cols)} columns)")
