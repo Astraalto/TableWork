@@ -458,7 +458,7 @@ def drop_table():
             conn.close()
             return
         
-        cursor.execute(f"SELECT * FROM '{tbale}' WHERE id = ?", (int(row_id),))
+        cursor.execute(f"SELECT * FROM '{table}' WHERE id = ?", (int(row_id),))
         row = cursor.fetchone()
         if not row:
             print(f"  No row with ID {row_id}.")
@@ -472,7 +472,7 @@ def drop_table():
             conn.commit()
             print(f"\n  ROW ID {row_id} deleted.")
         else:
-            print("  Concelled.")
+            print("  Cancelled.")
 
         conn.close()
         pause()
@@ -499,5 +499,18 @@ def drop_table():
                     for t in tables:
                         cursor.execute(f"SELECT COUNT(*) FROM '{t}'")
                         count = cursor.fetchone()[0]
-                        cols = get_columns(columns, t)
+                        cols = get_columns(cursor, t)
                         print(f"   {t}  ({count} rows, {len(cols)} columns)")
+                else:
+                    print("  (none)")
+                conn.close()
+                pause()
+            elif choice == "2":
+                create_table()
+            elif choice == "3":
+                drop_table()
+            elif choice == "0":
+                break
+            else:
+                print("Invalid option")
+                pause()
