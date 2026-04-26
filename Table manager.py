@@ -514,3 +514,34 @@ def drop_table():
             else:
                 print("Invalid option")
                 pause()
+
+    def data_menu():
+        while True:
+            clear()
+            print("╔══════════════════════════════╗")
+            print("║      MANAGE DATA             ║")
+            print("╠══════════════════════════════╣")
+            print("║  1. View table               ║")
+            print("║  2. Search                   ║")
+            print("║  3. Add row                  ║")
+            print("║  4. Edit row                 ║")
+            print("║  5. Delete row               ║")
+            print("║  0. Back                     ║")
+            print("╚══════════════════════════════╝")
+            choice = input("  Choose: ").strip
+
+            if choice == "1":
+                view_table()
+            elif choice == "2":
+                search_table()
+            elif choice == "3":
+                add_row()
+            elif choice == "4":
+                edit_row()
+            elif choice == "5":
+                delete_row()
+            elif choice == "0":
+                break
+            else:
+                print("   Invalid option.")
+                pause()
