@@ -246,302 +246,329 @@ def drop_table():
     conn.close()
     pause()
 
-    def pick_table(cursor):
-        tables = get_tables(cursor)
-        if not tables:
-            print("\n  No tables found. Create first. ")
-            return None
-        print("\n  Tables:")
-        for i, t in enumerate(tables, 1):
-            print(f"   {i}.  {t}")
-        choice = input("  Pick table number (or 0 to cancel): ").strip()
-        if choice == "0" or not choice.isdigit() or not (1 <= int(choice)  <= len(tables)):
-            return None
-        return tables[int(choice)  -1]
+def pick_table(cursor):
+    tables = get_tables(cursor)
+    if not tables:
+        print("\n  No tables found. Create first. ")
+        return None
+    print("\n  Tables:")
+    for i, t in enumerate(tables, 1):
+        print(f"   {i}.  {t}")
+    choice = input("  Pick table number (or 0 to cancel): ").strip()
+    if choice == "0" or not choice.isdigit() or not (1 <= int(choice)  <= len(tables)):
+        return None
+    return tables[int(choice)  -1]
+
+def view_table():
+    conn = get_conn()
+    cursor = conn.cursor()
+    table = pick_table(cursor)
+    if not table:
+        conn.close()
+        return
     
-    def view_table():
-        conn = get_conn()
-        cursor = conn.cursor()
-        table = pick_table(cursor)
-        if not table:
-            conn.close()
-            return
-        
-        cols = get_columns(cursor, table)
-        col_names = [c[1] for c in cols]
+    cols = get_columns(cursor, table)
+    col_names = [c[1] for c in cols]
 
-        cursor.execute(f"SELECT * FROM '{table}'")
-        rows = cursor.fetchall()
+    cursor.execute(f"SELECT * FROM '{table}'")
+    rows = cursor.fetchall()
 
-        print(f"\n Table: {table} ({len(rows)} row(s))\n")
+    print(f"\n Table: {table} ({len(rows)} row(s))\n")
 
-        if not rows:
-            print("  (Empty table)")
-        else:
-            widths = [max(len(str(c)), 6) for c in col_names]
-            for row in rows:
-                for i, val in enumerate(row):
-                    widths[i] = max(widths[i], len(str(val) if val is not None else ""))
+    if not rows:
+        print("  (Empty table)")
+    else:
+        widths = [max(len(str(c)), 6) for c in col_names]
+        for row in rows:
+            for i, val in enumerate(row):
+                widths[i] = max(widths[i], len(str(val) if val is not None else ""))
 
-            header = "  " + "  ".join(str(col_names[i]).ljust(widths[i]) for i in range(len(col_names)))
-            print(header)
-            print("  " + "  " * (sum(widths)  + 2 * len(widths)))
-            for row in rows:
-                line = "  " + "  ".join(
-                    (str(v) if v is not None else "").ljust(widths[i])
-                    for i, v in enumerate(row)
-                )
-                print(line)
+        header = "  " + "  ".join(str(col_names[i]).ljust(widths[i]) for i in range(len(col_names)))
+        print(header)
+        print("  " + "  " * (sum(widths)  + 2 * len(widths)))
+        for row in rows:
+            line = "  " + "  ".join(
+                (str(v) if v is not None else "").ljust(widths[i])
+                for i, v in enumerate(row)
+            )
+            print(line)
 
+    conn.close()
+    pause()
+
+def search_table():
+    conn = get_conn()
+    cursor = conn.cursor()
+    table = pick_table(cursor)
+    if not table:
         conn.close()
-        pause()
-
-    def search_table():
-        conn = get_conn()
-        cursor = conn.cursor()
-        table = pick_table(cursor)
-        if not table:
-            conn.close()
-            return
-        
-        cols = get_columns(cursor, table)
-        searchable = [c for c in cols if c[2] in ("TEXT", "DATE") and c[1] != "id"]
-
-        if not searchable:
-            print("\n  No searchable TEXT or DATE columns in this table.")
-            conn.close()
-            pause()
-            return
-        
-        print("\n Search in columns:")
-        for i, c in enumerate(searchable, 1):
-            print(f"   {i}. {c[1]}")
-        choice = input("  Pick column(or 0 to cancel):  ").strip()
-        if choice == "0" or not choice.isdigit() or not (1 <= int(choice)  <= len(searchable)):
-            conn.close()
-            return
-        
-        col = searchable[int(choice)  -1][1]
-        term = input(f"  Search '{col}'  for:  ").strip()
+        return
     
-        cursor.execute(f"SELECT * FROM '{table}' WHERE {col} LIKE ?", (f"%{term}%",))
-        rows = cursor.fetchall()
-        col_names = [c[1] for c in cols]
+    cols = get_columns(cursor, table)
+    searchable = [c for c in cols if c[2] in ("TEXT", "DATE") and c[1] != "id"]
 
-        print(f"\n {len(rows)} result(s) for '{term}' in '{col}':\n")
-        for row in rows:
-            for name, val in zip(col_names, row):
-                print(f"   {name}: {val}")
-            print()
-
+    if not searchable:
+        print("\n  No searchable TEXT or DATE columns in this table.")
         conn.close()
         pause()
+        return
+    
+    print("\n Search in columns:")
+    for i, c in enumerate(searchable, 1):
+        print(f"   {i}. {c[1]}")
+    choice = input("  Pick column(or 0 to cancel):  ").strip()
+    if choice == "0" or not choice.isdigit() or not (1 <= int(choice)  <= len(searchable)):
+        conn.close()
+        return
+    
+    col = searchable[int(choice)  -1][1]
+    term = input(f"  Search '{col}'  for:  ").strip()
 
-    def add_row():
-        conn = get_conn()
-        cursor = conn.cursor()
-        table = pick_table(cursor)
-        if not table:
-            conn.close()
-            return
-        
-        cols = get_columns(cursor, table)
-        data_cols = [c for c in cols if c[1] != "id"]
+    cursor.execute(f"SELECT * FROM '{table}' WHERE {col} LIKE ?", (f"%{term}%",))
+    rows = cursor.fetchall()
+    col_names = [c[1] for c in cols]
 
-        print(f"\n --Add row to '{table}' --\n")
-        values = {}
-        for col in data:
-            col_name = col[1]
-            col_type = col[2]
-            required = bool(col[3])
-            values[col_name] = prompt_value(col_name, col_type, nullable=not required)
+    print(f"\n {len(rows)} result(s) for '{term}' in '{col}':\n")
+    for row in rows:
+        for name, val in zip(col_names, row):
+            print(f"   {name}: {val}")
+        print()
 
-        col_list = ", ".join(values.keys())
-        placeholders = ", ".join(["?"] * len(values))
-        cursor.execute(
-            f"INSERT INTO '{table}' ({col_list}) VALUES ({placeholders})",
-            list(values.values())
-        )
+    conn.close()
+    pause()
+
+def add_row():
+    conn = get_conn()
+    cursor = conn.cursor()
+    table = pick_table(cursor)
+    if not table:
+        conn.close()
+        return
+    
+    cols = get_columns(cursor, table)
+    data_cols = [c for c in cols if c[1] != "id"]
+
+    print(f"\n --Add row to '{table}' --\n")
+    values = {}
+    for col in data:
+        col_name = col[1]
+        col_type = col[2]
+        required = bool(col[3])
+        values[col_name] = prompt_value(col_name, col_type, nullable=not required)
+
+    col_list = ", ".join(values.keys())
+    placeholders = ", ".join(["?"] * len(values))
+    cursor.execute(
+        f"INSERT INTO '{table}' ({col_list}) VALUES ({placeholders})",
+        list(values.values())
+    )
+    conn.commit()
+    print(f"\n Row added with ID {cursor.lastrowid}.")
+    conn.close()
+    pause()
+
+def edit_row():
+    conn = get_conn()
+    cursor = conn.cursor()
+    table = pick_table(cursor)
+    if not table:
+        conn.close()
+        return
+    
+    cols = get_columns(cursor, table)
+    col_names = [c[1] for c in cols]
+
+    cursor.execute(f"SELECT * FROM '{table}'")
+    rows = cursor.fetchall()
+
+    if not rows:
+        print(f"\n '{table} is empty")
+        conn.close()
+        pause()
+        return
+    
+    print(f"\n Rows in '{table}':\n")
+    for row in rows:
+        summary = "   |   ".join(f"{col_names[1]}:  {v}" for i, v in enumerate(row))
+        print(f"  {summary}")
+
+    row_id = input("\n Enter ID of the row to edit (or 0 to cancel): ").strip()
+    if row_id == "0" or not row_id.isdigit():
+        conn.close()
+        return    
+    
+    cursor.execute(f"SELECT * FROM '{table}' WHERE id =?", (int(row_id),))
+    row = cursor.execute.fetchone()
+    if not row:
+        print(f"  No row with ID {row_id}.")
+        conn.close()
+        pause()
+        return
+    
+    print(f"\n Editing row ID {row_id}. Press Enter to keep current value. \n")
+
+    data_cols = [c for c in cols if c[1] != "id"]
+    current = {c[1]: row[i + 1] for i, c in enumerate(data_cols)}
+    updates = {}
+
+    for col in data_cols:
+        col_name = col[1]
+        col_type = col[2]
+        current_val = current[col_name]
+        print(f" Current {col_name}: {current_val}")
+        new_val = prompt_value(col_name, col_type, nullable=True)
+
+    set_clause = ", ".join(f"{k} = ?" for k in updates)
+    cursor.execute(
+        f"UPDATE '{table}' SET {set_clause} WHERE id = ?",
+        list(updates.values()) + [int(row_id)]
+    )
+    conn.commit()
+    print(f"\n Row ID {row_id} updated.")
+    conn.close()
+    pause()
+
+def delete_row():
+    conn = get_conn()
+    cursor = conn.cursor()
+    table = pick_table(cursor)
+    if not table:
+        conn.close()
+        return
+    
+    cols = get_columns(cursor, table)
+    col_names = [c[1] for c in cols]
+
+    cursor.execute(f"SELECT * FROM '{table}'")
+    rows = cursor.fetchall()
+
+    if not rows:
+        print(f"\n  '{table}' is empty")
+        conn.close()
+        pause()
+        return
+    
+    print(f"\n Rows in table '{table}':\n")
+    for row in rows:
+        summary = "  |  ".join(f"{col_names[i]}: {v}" for i, v in enumerate(row))
+        print(f"  {summary}")
+
+    row_id = input("\n Enter the ID of the row to delete (0 to cancel): ").strip()
+    if row_id == "0" or not row_id.isdigit():
+        conn.close()
+        return
+    
+    cursor.execute(f"SELECT * FROM '{table}' WHERE id = ?", (int(row_id),))
+    row = cursor.fetchone()
+    if not row:
+        print(f"  No row with ID {row_id}.")
+        conn.close()
+        pause()
+        return
+    
+    confirm = input(f" Delete row ID {row_id}?  (Y/N): ").strip().lower()
+    if confirm == "y":
+        cursor.execute(f"DELETE FROM '{table}' WHERE id = ?", (int(row_id),))
         conn.commit()
-        print(f"\n Row added with ID {cursor.lastrowid}.")
-        conn.close()
-        pause()
+        print(f"\n  ROW ID {row_id} deleted.")
+    else:
+        print("  Cancelled.")
 
-    def edit_row():
-        conn = get_conn()
-        cursor = conn.cursor()
-        table = pick_table(cursor)
-        if not table:
-            conn.close()
-            return
-        
-        cols = get_columns(cursor, table)
-        col_names = [c[1] for c in cols]
+    conn.close()
+    pause()
 
-        cursor.execute(f"SELECT * FROM '{table}'")
-        rows = cursor.fetchall()
+def tables_menu():
+    while True:
+        clear()
+        print("╔══════════════════════════════╗")
+        print("║      MANAGE TABLES           ║")
+        print("╠══════════════════════════════╣")
+        print("║  1. List all tables          ║")
+        print("║  2. Create new table         ║")
+        print("║  3. Delete a table           ║")
+        print("║  0. Back                     ║")
+        print("╚══════════════════════════════╝")
+        choice = input("  Choose:  ").strip()
 
-        if not rows:
-            print(f"\n '{table} is empty")
-            conn.close()
-            pause()
-            return
-        
-        print(f"\n Rows in '{table}':\n")
-        for row in rows:
-            summary = "   |   ".join(f"{col_names[1]}:  {v}" for i, v in enumerate(row))
-            print(f"  {summary}")
-
-        row_id = input("\n Enter ID of the row to edit (or 0 to cancel): ").strip()
-        if row_id == "0" or not row_id.isdigit():
-            conn.close()
-            return    
-        
-        cursor.execute(f"SELECT * FROM '{table}' WHERE id =?", (int(row_id),))
-        row = cursor.execute.fetchone()
-        if not row:
-            print(f"  No row with ID {row_id}.")
+        if choice == "1":
+            conn = get_conn()
+            cursor = conn.cursor()
+            tables = get_tables(cursor)
+            print(f"\n  Tables in {DB_FILE}:")
+            if tables:
+                for t in tables:
+                    cursor.execute(f"SELECT COUNT(*) FROM '{t}'")
+                    count = cursor.fetchone()[0]
+                    cols = get_columns(cursor, t)
+                    print(f"   {t}  ({count} rows, {len(cols)} columns)")
+            else:
+                print("  (none)")
             conn.close()
             pause()
-            return
-        
-        print(f"\n Editing row ID {row_id}. Press Enter to keep current value. \n")
-
-        data_cols = [c for c in cols if c[1] != "id"]
-        current = {c[1]: row[i + 1] for i, c in enumerate(data_cols)}
-        updates = {}
-
-        for col in data_cols:
-            col_name = col[1]
-            col_type = col[2]
-            current_val = current[col_name]
-            print(f" Current {col_name}: {current_val}")
-            new_val = prompt_value(col_name, col_type, nullable=True)
-
-        set_clause = ", ".join(f"{k} = ?" for k in updates)
-        cursor.execute(
-            f"UPDATE '{table}' SET {set_clause} WHERE id = ?",
-            list(updates.values()) + [int(row_id)]
-        )
-        conn.commit()
-        print(f"\n Row ID {row_id} updated.")
-        conn.close()
-        pause()
-
-    def delete_row():
-        conn = get_conn()
-        cursor = conn.cursor()
-        table = pick_table(cursor)
-        if not table:
-            conn.close()
-            return
-        
-        cols = get_columns(cursor, table)
-        col_names = [c[1] for c in cols]
-
-        cursor.execute(f"SELECT * FROM '{table}'")
-        rows = cursor.fetchall()
-
-        if not rows:
-            print(f"\n  '{table}' is empty")
-            conn.close()
-            pause()
-            return
-        
-        print(f"\n Rows in table '{table}':\n")
-        for row in rows:
-            summary = "  |  ".join(f"{col_names[i]}: {v}" for i, v in enumerate(row))
-            print(f"  {summary}")
-
-        row_id = input("\n Enter the ID of the row to delete (0 to cancel): ").strip()
-        if row_id == "0" or not row_id.isdigit():
-            conn.close()
-            return
-        
-        cursor.execute(f"SELECT * FROM '{table}' WHERE id = ?", (int(row_id),))
-        row = cursor.fetchone()
-        if not row:
-            print(f"  No row with ID {row_id}.")
-            conn.close()
-            pause()
-            return
-        
-        confirm = input(f" Delete row ID {row_id}?  (Y/N): ").strip().lower()
-        if confirm == "y":
-            cursor.execute(f"DELETE FROM '{table}' WHERE id = ?", (int(row_id),))
-            conn.commit()
-            print(f"\n  ROW ID {row_id} deleted.")
+        elif choice == "2":
+            create_table()
+        elif choice == "3":
+            drop_table()
+        elif choice == "0":
+            break
         else:
-            print("  Cancelled.")
+            print("Invalid option")
+            pause()
 
-        conn.close()
-        pause()
+def data_menu():
+    while True:
+        clear()
+        print("╔══════════════════════════════╗")
+        print("║      MANAGE DATA             ║")
+        print("╠══════════════════════════════╣")
+        print("║  1. View table               ║")
+        print("║  2. Search                   ║")
+        print("║  3. Add row                  ║")
+        print("║  4. Edit row                 ║")
+        print("║  5. Delete row               ║")
+        print("║  0. Back                     ║")
+        print("╚══════════════════════════════╝")
+        choice = input("  Choose: ").strip
 
-    def tables_menu():
-        while True:
+        if choice == "1":
+            view_table()
+        elif choice == "2":
+            search_table()
+        elif choice == "3":
+            add_row()
+        elif choice == "4":
+            edit_row()
+        elif choice == "5":
+            delete_row()
+        elif choice == "0":
+            break
+        else:
+            print("   Invalid option.")
+            pause()
+
+def main_menu():
+    while True:
+        clear()
+        print("╔══════════════════════════════╗")
+        print(f"║  DB: {DB_FILE:<23} ║")
+        print("╠══════════════════════════════╣")
+        print("║  1. Manage tables            ║")
+        print("║  2. Manage data              ║")
+        print("║  0. Quit                     ║")
+        print("╚══════════════════════════════╝")
+        choice = input("  Choose: ").strip
+
+        if choice == "1":
+            tables_menu()
+        elif choice == "2":
+            data_menu()
+        elif choice == "0":
             clear()
-            print("╔══════════════════════════════╗")
-            print("║      MANAGE TABLES           ║")
-            print("╠══════════════════════════════╣")
-            print("║  1. List all tables          ║")
-            print("║  2. Create new table         ║")
-            print("║  3. Delete a table           ║")
-            print("║  0. Back                     ║")
-            print("╚══════════════════════════════╝")
-            choice = input("  Choose:  ").strip()
+            print("  Goodbye!\n")
+            break
+        else:
+            print(" Invalide option")
+            pause()
 
-            if choice == "1":
-                conn = get_conn()
-                cursor = conn.cursor()
-                tables = get_tables(cursor)
-                print(f"\n  Tables in {DB_FILE}:")
-                if tables:
-                    for t in tables:
-                        cursor.execute(f"SELECT COUNT(*) FROM '{t}'")
-                        count = cursor.fetchone()[0]
-                        cols = get_columns(cursor, t)
-                        print(f"   {t}  ({count} rows, {len(cols)} columns)")
-                else:
-                    print("  (none)")
-                conn.close()
-                pause()
-            elif choice == "2":
-                create_table()
-            elif choice == "3":
-                drop_table()
-            elif choice == "0":
-                break
-            else:
-                print("Invalid option")
-                pause()
-
-    def data_menu():
-        while True:
-            clear()
-            print("╔══════════════════════════════╗")
-            print("║      MANAGE DATA             ║")
-            print("╠══════════════════════════════╣")
-            print("║  1. View table               ║")
-            print("║  2. Search                   ║")
-            print("║  3. Add row                  ║")
-            print("║  4. Edit row                 ║")
-            print("║  5. Delete row               ║")
-            print("║  0. Back                     ║")
-            print("╚══════════════════════════════╝")
-            choice = input("  Choose: ").strip
-
-            if choice == "1":
-                view_table()
-            elif choice == "2":
-                search_table()
-            elif choice == "3":
-                add_row()
-            elif choice == "4":
-                edit_row()
-            elif choice == "5":
-                delete_row()
-            elif choice == "0":
-                break
-            else:
-                print("   Invalid option.")
-                pause()
+if __name__ == "__main__":
+    main_menu()
